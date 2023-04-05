@@ -1,5 +1,5 @@
 {
-  "name": "mariadb",
+  "name": "mariadb_node",
   "version": "1.0.0",
   "description": "",
   "main": "server.js",
@@ -13,7 +13,6 @@
   "dependencies": {
     "express": "^4.18.2",
     "mariadb": "^3.1.1",
-    "nodemon": "^2.0.22",
     "sequelize": "^6.30.0"
   }
 }
