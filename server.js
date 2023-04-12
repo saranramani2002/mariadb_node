@@ -2,6 +2,7 @@ const express = require("express");
 const app = express();
 const taskDetails = require("../mariadb_node/dao/daofile");
 
+//get all tasks from DB API
 app.get("/getAllTasks", async (req, res) => {
   let response = {
     data: null,
@@ -18,13 +19,13 @@ app.get("/getAllTasks", async (req, res) => {
       };
     } else {
       response = {
-        data: tasks,
+        data: null,
         message: "Error while fetching all tasks",
         code: 500,
       };
     }
     res.send(response);
-    // console.log("tasks", tasks);
+    console.log("tasks", tasks);
   } catch (error) {
     response = {
       data: null,
@@ -36,6 +37,7 @@ app.get("/getAllTasks", async (req, res) => {
   }
 });
 
+//create new task into DB API
 app.get("/createTask", async (req, res) => {
   let response = {
     data: null,
@@ -71,6 +73,7 @@ app.get("/createTask", async (req, res) => {
   }
 });
 
+//update existing task into DB API
 app.get("/updateTask", async (req, res) => {
   let response = {
     data: null,
@@ -107,6 +110,7 @@ app.get("/updateTask", async (req, res) => {
   }
 });
 
+//delete existing task into DB API
 app.get("/deleteTask", async (req, res) => {
   let response = {
     data: null,
@@ -124,7 +128,7 @@ app.get("/deleteTask", async (req, res) => {
       };
     } else {
       response = {
-        data: tasks,
+        data: null,
         message: "Error while deleting task",
         code: 500,
       };
@@ -134,7 +138,7 @@ app.get("/deleteTask", async (req, res) => {
   } catch (error) {
     console.log("Error ", error);
     response = {
-      data: tasks,
+      data: null,
       message: "Error while deleting task",
       code: 500,
     };
@@ -142,6 +146,7 @@ app.get("/deleteTask", async (req, res) => {
   }
 });
 
+//get task by Id in DB API
 app.get("/getTaskById", async (req, res) => {
   let response = {
     data: null,
@@ -159,7 +164,7 @@ app.get("/getTaskById", async (req, res) => {
       };
     } else {
       response = {
-        data: tasks,
+        data: null,
         message: "Error while fetching task by id",
         code: 500,
       };
@@ -169,7 +174,7 @@ app.get("/getTaskById", async (req, res) => {
   } catch (error) {
     console.log("Error ", error);
     response = {
-      data: tasks,
+      data: null,
       message: "Error while fetching task by id",
       code: 500,
     };

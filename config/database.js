@@ -1,4 +1,4 @@
-const Sequelize = require("sequelize");
+const  Sequelize  = require("sequelize");
 
 const sequelize = new Sequelize("todo", "root", "root@12", {
   host: "localhost",
