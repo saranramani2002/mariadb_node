@@ -1,4 +1,4 @@
-const { DefaultDeserializer } = require("v8");
+   const { DefaultDeserializer } = require("v8");
 const TaskDetails = require("../model/table");
 
 const getAllTasks = async () => {
@@ -48,23 +48,23 @@ const deleteTask = async (id) => {
   }
 };
 
-const getTaskById = async (taskId) => {
-  try {
-    let response = await TaskDetails.findOne({
-      where: {
-        task_id: taskId,
-      },
-    });
-    return JSON.parse(JSON.stringify(response));
-  } catch (error) {
-    console.log("Error ", error);
-  }
-};
+// const getTaskById = async (taskId) => {
+//   try {
+//     let response = await TaskDetails.findOne({
+//       where: {
+//         task_id: taskId,
+//       },
+//     });
+//     return JSON.parse(JSON.stringify(response));
+//   } catch (error) {
+//     console.log("Error ", error);
+//   }
+// };
 
 module.exports = {
   getAllTasks: getAllTasks,
   createTask: createTask,
   updateTask: updateTask,
   deleteTask: deleteTask,
-  getTaskById: getTaskById,
+  
 };
