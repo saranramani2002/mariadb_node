@@ -73,6 +73,17 @@ app.get("/createTask", async (req, res) => {
   }
 });
 
+app.post("/tasks", async (req, res) => {
+  const newTask = req.body;
+  try {
+    const task = await taskDetails.createTask(newTask);
+    res.status(201).json(task);
+  } catch (error) {
+    console.log("Error ", error);
+    res.status(500).json({ message: "Error while creating task" });
+  }
+});
+
 //update existing task into DB API
 app.get("/updateTask", async (req, res) => {
   let response = {
@@ -107,6 +118,21 @@ app.get("/updateTask", async (req, res) => {
       code: 500,
     };
     res.send(response);
+  }
+});
+
+app.put("/tasks/:id", async (req, res) => {
+  const taskId = req.params.id;
+  const updatedTask = req.body;
+  try {
+    const task = await taskDetails.updateTask(taskId, updatedTask);
+    if (!task) {
+      return res.status(404).json({ message: "Task not found" });
+    }
+    res.status(200).json(task);
+  } catch (error) {
+    console.log("Error ", error);
+    res.status(500).json({ message: "Error while updating task" });
   }
 });
 
@@ -146,41 +172,55 @@ app.get("/deleteTask", async (req, res) => {
   }
 });
 
-//get task by Id in DB API
-app.get("/getTaskById", async (req, res) => {
-  let response = {
-    data: null,
-    message: "",
-    code: 200,
-  };
+app.delete("/tasks/:id", async (req, res) => {
+  const taskId = req.params.id;
   try {
-    let taskId = req.query.taskId;
-    let tasks = await taskDetails.getTaskById(taskId);
-    if (tasks) {
-      response = {
-        data: tasks,
-        message: "Task fetched by Id successfully",
-        code: 200,
-      };
-    } else {
-      response = {
-        data: null,
-        message: "Error while fetching task by id",
-        code: 500,
-      };
+    const task = await taskDetails.deleteTask(taskId);
+    if (!task) {
+      return res.status(404).json({ message: "Task not found" });
     }
-    // console.log(tasks);
-    res.send(response);
+    res.status(200).json({ message: "Task deleted successfully" });
   } catch (error) {
     console.log("Error ", error);
-    response = {
-      data: null,
-      message: "Error while fetching task by id",
-      code: 500,
-    };
-    res.send(response);
+    res.status(500).json({ message: "Error while deleting task" });
   }
 });
+
+//get task by Id in DB API
+// app.get("/getTaskById", async (req, res) => {
+//   let response = {
+//     data: null,
+//     message: "",
+//     code: 200,
+//   };
+//   try {
+//     let taskId = req.query.taskId;
+//     let tasks = await taskDetails.getTaskById(taskId);
+//     if (tasks) {
+//       response = {
+//         data: tasks,
+//         message: "Task fetched by Id successfully",
+//         code: 200,
+//       };
+//     } else {
+//       response = {
+//         data: null,
+//         message: "Error while fetching task by id",
+//         code: 500,
+//       };
+//     }
+//     // console.log(tasks);
+//     res.send(response);
+//   } catch (error) {
+//     console.log("Error ", error);
+//     response = {
+//       data: null,
+//       message: "Error while fetching task by id",
+//       code: 500,
+//     };
+//     res.send(response);
+//   }
+// });
 
 const server = app.listen(8080, function () {
   console.log("Listening on port ", server.address().port);
