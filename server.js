@@ -24,6 +24,7 @@ app.post("/tasks", async (req, res) => {
   try {
     const task = await taskDetails.createTask(newTask);
     res.status(201).json(task);
+    console.log("task",task)
   } catch (error) {
     console.log("Error ", error);
     res.status(500).json({ message: "Error while creating task" });
@@ -40,6 +41,7 @@ app.put("/tasks/:id", async (req, res) => {
       return res.status(404).json({ message: "Task not found" });
     }
     res.status(200).json(task);
+    console.log("task",task)
   } catch (error) {
     console.log("Error ", error);
     res.status(500).json({ message: "Error while updating task" });
@@ -55,6 +57,7 @@ app.delete("/tasks/:id", async (req, res) => {
       return res.status(404).json({ message: "Task not found" });
     }
     res.status(200).json({ message: "Task deleted successfully" });
+    console.log("task",task)
   } catch (error) {
     console.log("Error ", error);
     res.status(500).json({ message: "Error while deleting task" });
