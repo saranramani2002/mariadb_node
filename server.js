@@ -1,69 +1,126 @@
-const express = require("express");
-const app = express();
-const taskDetails = require("./dao/daofile");
+import React, { useEffect, useState } from "react";
+import "./App.css";
 
-//get all tasks from DB API
-app.get("/getAllTasks", async (req, res) => {
-  try {
-    let tasks = await taskDetails.getAllTasks();
-    let response = {
-      data: tasks,
-      message: "Task fetched successfully",
-      code: 200,
-      };
-    res.send(response);
-    console.log("tasks", tasks);  
-  } catch (error) {
-    console.log("Error ", error);
-  }
-});
+function TodoList() {
+  const [taskList, setTaskList] = useState([]);
+  const [taskValue, setTaskValue] = useState("");
+  const [selectedTask, setSelectedTask] = useState(null);
 
-//post task to DB API
-app.post("/tasks", async (req, res) => {
-  const newTask = req.body;
-  try {
-    const task = await taskDetails.createTask(newTask);
-    res.status(201).json(task);
-    console.log("task",task)
-  } catch (error) {
-    console.log("Error ", error);
-    res.status(500).json({ message: "Error while creating task" });
-  }
-});
-
-//Update task to DB API
-app.put("/tasks/:id", async (req, res) => {
-  const taskId = req.params.id;
-  const updatedTask = req.body;
-  try {
-    const task = await taskDetails.updateTask(taskId, updatedTask);
-    if (!task) {
-      return res.status(404).json({ message: "Task not found" });
+  useEffect(() => {
+    async function fetchData() {
+      const response = await fetch("http://localhost:8080/getAllTasks");
+      const data = await response.json();
+      setTaskList(data);
     }
-    res.status(200).json(task);
-    console.log("task",task)
-  } catch (error) {
-    console.log("Error ", error);
-    res.status(500).json({ message: "Error while updating task" });
-  }
-  });
+    fetchData();
+  }, []);
 
-//delete task to DB API
-app.delete("/tasks/:id", async (req, res) => {
-  const taskId = req.params.id;
-  try {
-    const task = await taskDetails.deleteTask(taskId);
-    if (!task) {
-      return res.status(404).json({ message: "Task not found" });
+  const addTask = async (e) => {
+    // e.preventDefault();
+    const input = document.getElementById("inputfield");
+    const task = input.value.trim().toLowerCase();
+
+    const response = await fetch("http://localhost:8080/tasks", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ title: task }),
+    });
+    if (response.ok) {
+      const data = await response.json();
+      console.log(data);
+      const newTask = [...taskList, data];
+      setTaskList(newTask);
+      setTaskValue("");
     }
-    res.status(200).json({ message: "Task deleted successfully" });
-    console.log("task",task)
-  } catch (error) {
-    console.log("Error ", error);
-    res.status(500).json({ message: "Error while deleting task" });
-  }
-});
+  };
 
-const server = app.listen(8080, function () {
-  console.log("Listening on port ", server.address().port);
-});
+  const editTask = (task) => {
+    setSelectedTask(task);
+    setTaskValue(task.task_name);
+  };
+
+  const updateTask = async (e) => {
+    e.preventDefault();
+    if (!selectedTask) {
+      return;
+    }
+    const response = await fetch(
+      `http://localhost:8080/tasks?id=${selectedTask._id}`,
+      {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ task_name: taskValue }),
+      }
+    );
+    if (response.ok) {
+      const data = await response.json();
+      const editedTaskList = taskList.map((task) =>
+        task._id === selectedTask._id ? data : task
+      );
+      setTaskList(editedTaskList);
+      setSelectedTask(null);
+      setTaskValue("");
+    }
+  };
+
+  const deleteTask = async (id) => {
+    const response = await fetch(`http://localhost:8080/tasks?id=${id}`, {
+      method: "DELETE",
+    });
+    if (response.ok) {
+      const newTaskList = taskList.filter((task) => task._id !== id);
+      setTaskList(newTaskList);
+    }
+  };
+    
+  return (
+    <div className="container">
+      <h1>TODO LIST</h1>
+      <div className="input">
+        <form className="form" onSubmit={selectedTask ? updateTask : addTask}>
+          <input
+            id="inputfield"
+            type="text"
+            placeholder="Add New Task"
+            value={taskValue}
+            onChange={(e) => setTaskValue(e.target.value)}
+          />
+          <button type="submit" id="addbtn">
+            {selectedTask ? "Save" : "Add"}
+          </button>
+        </form>
+      </div>
+      <br />
+      <div className="insidecontainer">
+        <ul id="list">
+          {taskList && taskList.length > 0 ? (
+            taskList.map((task, index) => (
+              <li key={index}>
+                <>
+                  {task.task_name}
+                  <button className="edit" onClick={() => editTask(task)}>
+                    Edit
+                  </button>
+                  <button
+                    className="delete"
+                    onClick={() => deleteTask(task._id)}
+                  >
+                    Delete
+                  </button>
+                </>
+              </li>
+            ))
+          ) : (
+            <li>No tasks found</li>
+          )}
+        </ul>
+      </div>
+    </div>
+  );
+}
+
+export default TodoList;

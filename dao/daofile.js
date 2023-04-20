@@ -1,5 +1,5 @@
-   const { DefaultDeserializer } = require("v8");
-const TaskDetails = require("../model/table");
+const { DefaultDeserializer } = require("v8");
+
 
 const getAllTasks = async () => {
   try {
