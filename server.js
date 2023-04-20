@@ -20,29 +20,28 @@ app.get('/getAllTasks', async (req, res) => {
 
 // Create a new task
 app.post('/tasks', async (req, res) => {
-  const { title } = req.body;
+  const {id:task_id, title: task_name } = req.body;
+  console.log(req.body)
   try {
-    const task = await TaskDetails.create({ task_name: title });
-    const id = task.id;
-    res.status(201).json({ id: id, task_name: title });
+    const task = await TaskDetails.create({ task_name });
+    res.status(201).json({ id: task_id, task_name: task.task_name });
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: 'Error while creating task' });
   }
 });
 
-
 // Updating existing task
 app.put("/tasks", async (req, res) => {
-  const { id } = req.query;
-  const { task_name } = req.body;
+  const { task_id, task_name } = req.body;
   try {
-    const result = await Task.findByIdAndUpdate(
-      { _id: id },
-      { task_name },
-      { new: true }
-    );
-    res.json({ message: "Task updated successfully", result });
+    const task = await TaskDetails.findOne({ where: { task_id: task_id } });
+    if (!task) {
+      res.status(404).json({ message: "Task not found" });
+    } else {
+      await task.update({ task_name });
+      res.json({ message: "Task updated successfully", task: task });
+    }
   } catch (err) {
     res.status(500).json({ error: "Unable to update task", message: err });
   }
@@ -50,17 +49,21 @@ app.put("/tasks", async (req, res) => {
 
 // Deleting existing task
 app.delete("/tasks", async (req, res) => {
-  const { id } = req.query;
+  const { task_id } = req.body;
   try {
-    const result = await Task.deleteOne({ _id: id });
-    res.json({ message: "Task deleted successfully", result });
+    const result = await TaskDetails.destroy({ where: { task_id: task_id } });
+    if (result === 0) {
+      res.status(404).json({ message: "Task not found" });
+    } else {
+      res.json({ message: "Task deleted successfully" });
+    }
   } catch (err) {
-    res.status(500).json({ error: "Unable to delete task", message: err });
+    console.error(err);
+    res.status(500).json({ error: "Unable to delete task" });
   }
 });
 
 //Server starting
-const server = 
-app.listen(8080, () => {
-  console.log('Server listening on port',server.address().port);
+const server = app.listen(8080, () => {
+  console.log('Server listening on port', server.address().port);
 });
