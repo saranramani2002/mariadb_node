@@ -1,126 +1,66 @@
-import React, { useEffect, useState } from "react";
-import "./App.css";
+const express = require('express');
+const bodyParser = require('body-parser');
+const cors = require('cors');
+const TaskDetails = require("./model/table");
 
-function TodoList() {
-  const [taskList, setTaskList] = useState([]);
-  const [taskValue, setTaskValue] = useState("");
-  const [selectedTask, setSelectedTask] = useState(null);
+const app = express();
+app.use(bodyParser.json());
+app.use(cors());
 
-  useEffect(() => {
-    async function fetchData() {
-      const response = await fetch("http://localhost:8080/getAllTasks");
-      const data = await response.json();
-      setTaskList(data);
-    }
-    fetchData();
-  }, []);
+// Get all tasks
+app.get('/getAllTasks', async (req, res) => {
+  try {
+    const tasks = await TaskDetails.findAll();
+    res.json(tasks);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Error while fetching tasks' });
+  }
+});
 
-  const addTask = async (e) => {
-    // e.preventDefault();
-    const input = document.getElementById("inputfield");
-    const task = input.value.trim().toLowerCase();
+// Create a new task
+app.post('/tasks', async (req, res) => {
+  const { title } = req.body;
+  try {
+    const task = await TaskDetails.create({ task_name: title });
+    const id = task.id;
+    res.status(201).json({ id: id, task_name: title });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Error while creating task' });
+  }
+});
 
-    const response = await fetch("http://localhost:8080/tasks", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ title: task }),
-    });
-    if (response.ok) {
-      const data = await response.json();
-      console.log(data);
-      const newTask = [...taskList, data];
-      setTaskList(newTask);
-      setTaskValue("");
-    }
-  };
 
-  const editTask = (task) => {
-    setSelectedTask(task);
-    setTaskValue(task.task_name);
-  };
-
-  const updateTask = async (e) => {
-    e.preventDefault();
-    if (!selectedTask) {
-      return;
-    }
-    const response = await fetch(
-      `http://localhost:8080/tasks?id=${selectedTask._id}`,
-      {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ task_name: taskValue }),
-      }
+// Updating existing task
+app.put("/tasks", async (req, res) => {
+  const { id } = req.query;
+  const { task_name } = req.body;
+  try {
+    const result = await Task.findByIdAndUpdate(
+      { _id: id },
+      { task_name },
+      { new: true }
     );
-    if (response.ok) {
-      const data = await response.json();
-      const editedTaskList = taskList.map((task) =>
-        task._id === selectedTask._id ? data : task
-      );
-      setTaskList(editedTaskList);
-      setSelectedTask(null);
-      setTaskValue("");
-    }
-  };
+    res.json({ message: "Task updated successfully", result });
+  } catch (err) {
+    res.status(500).json({ error: "Unable to update task", message: err });
+  }
+});
 
-  const deleteTask = async (id) => {
-    const response = await fetch(`http://localhost:8080/tasks?id=${id}`, {
-      method: "DELETE",
-    });
-    if (response.ok) {
-      const newTaskList = taskList.filter((task) => task._id !== id);
-      setTaskList(newTaskList);
-    }
-  };
-    
-  return (
-    <div className="container">
-      <h1>TODO LIST</h1>
-      <div className="input">
-        <form className="form" onSubmit={selectedTask ? updateTask : addTask}>
-          <input
-            id="inputfield"
-            type="text"
-            placeholder="Add New Task"
-            value={taskValue}
-            onChange={(e) => setTaskValue(e.target.value)}
-          />
-          <button type="submit" id="addbtn">
-            {selectedTask ? "Save" : "Add"}
-          </button>
-        </form>
-      </div>
-      <br />
-      <div className="insidecontainer">
-        <ul id="list">
-          {taskList && taskList.length > 0 ? (
-            taskList.map((task, index) => (
-              <li key={index}>
-                <>
-                  {task.task_name}
-                  <button className="edit" onClick={() => editTask(task)}>
-                    Edit
-                  </button>
-                  <button
-                    className="delete"
-                    onClick={() => deleteTask(task._id)}
-                  >
-                    Delete
-                  </button>
-                </>
-              </li>
-            ))
-          ) : (
-            <li>No tasks found</li>
-          )}
-        </ul>
-      </div>
-    </div>
-  );
-}
+// Deleting existing task
+app.delete("/tasks", async (req, res) => {
+  const { id } = req.query;
+  try {
+    const result = await Task.deleteOne({ _id: id });
+    res.json({ message: "Task deleted successfully", result });
+  } catch (err) {
+    res.status(500).json({ error: "Unable to delete task", message: err });
+  }
+});
 
-export default TodoList;
+//Server starting
+const server = 
+app.listen(8080, () => {
+  console.log('Server listening on port',server.address().port);
+});
