@@ -7,7 +7,7 @@ const app = express();
 app.use(bodyParser.json());
 app.use(cors());
 
-// Get all tasks
+// Get all tasks API
 app.get('/getAllTasks', async (req, res) => {
   try {
     const tasks = await TaskDetails.findAll();
@@ -18,7 +18,7 @@ app.get('/getAllTasks', async (req, res) => {
   }
 });
 
-// Create a new task
+// Create a new task API
 app.post('/tasks', async (req, res) => {
   const {id:task_id, title: task_name } = req.body;
   console.log(req.body)
@@ -31,7 +31,7 @@ app.post('/tasks', async (req, res) => {
   }
 });
 
-// Updating existing task
+// Updating existing task API
 app.put("/tasks", async (req, res) => {
   const { task_id, task_name } = req.body;
   try {
@@ -47,7 +47,7 @@ app.put("/tasks", async (req, res) => {
   }
 });
 
-// Deleting existing task
+// Deleting existing task API
 app.delete("/tasks", async (req, res) => {
   const { task_id } = req.body;
   try {
